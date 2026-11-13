@@ -63,13 +63,16 @@ async function pollTab() {
   try {
     const s = await callSw<TabState>({ type: 'tab:getState', tabId });
     lastState = s;
+    const urlChanged = s.url !== tabUrl;
     tabUrl = s.url;
     document.querySelector('[data-testid=tab-adapter]')!.textContent = s.active ? s.adapterName : `${s.adapterName}`;
     document.querySelector('[data-testid=tab-time]')!.textContent = s.time ? formatTime(s.time) : 'no timecode';
     document.querySelector('[data-testid=tab-title]')!.textContent = s.title;
     $('btn-review').textContent = s.active ? 'Stop review' : 'Start review';
     if (s.overlayFailed) showError(`Overlay could not start (${s.overlayFailed}). "Screenshot note" may still work.`);
-    renderFilters();
+    // "This page only" depends on the tab URL: re-filter when the tab navigates or another tab is activated.
+    if (urlChanged && ($('scope-page') as HTMLInputElement).checked) render();
+    else renderFilters();
   } catch {
     /* tab closed */
   }
@@ -114,7 +117,7 @@ function render() {
   const list = $('list');
   const items = visibleNotes();
   if (!items.length) {
-    list.replaceChildren(h('div', { class: 'empty', 'data-testid': 'empty' }, notes.length ? 'No notes match the filter.' : 'No notes yet. Start a review, draw, and press “Add note”.'));
+    list.replaceChildren(h('div', { class: 'empty', 'data-testid': 'empty' }, notes.length ? (($('scope-page') as HTMLInputElement).checked ? 'No notes match the filter on this page.' : 'No notes match the filter.') : 'No notes yet. Start a review, draw, and press “Add note”.'));
     return;
   }
   list.replaceChildren(...items.map(card));
@@ -282,6 +285,9 @@ chrome.runtime.onMessage.addListener((m) => {
   }
 });
 chrome.tabs.onActivated.addListener(() => void pollTab());
+chrome.tabs.onUpdated.addListener((_id, info) => {
+  if (info.url || info.status === 'complete') void pollTab();
+});
 
 void (async () => {
   await load();
