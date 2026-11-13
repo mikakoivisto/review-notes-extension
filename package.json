@@ -1,0 +1,19 @@
+{
+  "name": "review-notes-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Chromium MV3 extension for timestamped review notes, annotations and screenshots on videos and web pages, with an MCP companion.",
+  "license": "MIT",
+  "scripts": {},
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "@playwright/test": "^1.65.0",
+    "@types/chrome": "^0.3.7",
+    "@types/node": "^26.6.6",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0",
+    "zod": "^4.6.7"
+  }
+}
