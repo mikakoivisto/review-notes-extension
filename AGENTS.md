@@ -43,13 +43,14 @@ How to record (Playwright is already set up for it):
 
 1. Write a temporary paced spec using the fixtures in `tests/e2e/fixtures.ts`. They record every page when `PW_VIDEO_DIR` is set. Do not commit this spec.
 2. Run it twice: once with the base branch's version of the changed files built (`git show main:<file> > <file>`, `npm run build`), once with the fix built. Restore the files afterwards.
-3. Stitch the page window and the panel window side by side with ffmpeg (see `scripts/record-demo.mjs`), add the caption, export H.264 `.mp4`, and extract one still per recording.
+3. Stitch the page window and the panel window side by side with ffmpeg (see `scripts/record-demo.mjs`), add the caption, and export an H.264 `.mp4`, a looping `.gif` (about 10 fps, 900 px wide, palettegen), and one `.png` still per recording.
 4. Look at the stills before publishing. Confirm they show what the PR claims.
 
 Where to put the media:
 
 - Push the files to the orphan branch `pr-media` under `<pr-branch-name>/`. Never commit videos to `main` or to the PR branch.
-- In the PR description: `<video src=".../raw/pr-media/<pr-branch-name>/before.mp4" controls>` plus the PNG stills as images and direct links to the mp4 files. Stills are the fallback if inline video does not play.
+- In the PR description, embed the **GIFs** as images (`![before](https://github.com/<owner>/<repo>/raw/pr-media/<pr-branch-name>/before.gif)`), stacked full-width, each under a bold caption, and link the mp4 files for full quality.
+- Do **not** use `<video src>` pointing at a raw file URL: GitHub serves it as a download and it will not play inline. Only videos uploaded through the GitHub comment box get an inline player; that upload has no API, so a person can drag the mp4 in by hand if a real player is wanted.
 
 ## Commits and PRs
 
