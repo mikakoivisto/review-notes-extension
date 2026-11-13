@@ -14,7 +14,12 @@ Design details: [docs/SPEC.md](docs/SPEC.md) · JSON schema: [docs/note.schema.j
 
 ## Install (load unpacked)
 
-Requires Node ≥ 20 and a Chromium-based browser (Chrome, Edge, Brave, Chromium ≥ 116).
+Requires a Chromium-based browser (Chrome, Edge, Brave, Chromium ≥ 116).
+
+**From a release (no Node needed):** download `review-notes-extension-vX.Y.Z.zip` from the repo's Releases page, unzip it,
+open `chrome://extensions`, enable Developer mode, **Load unpacked**, pick the unzipped folder.
+
+**From source** (needs Node ≥ 20):
 
 ```bash
 npm install
