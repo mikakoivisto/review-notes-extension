@@ -49,8 +49,9 @@ How to record (Playwright is already set up for it):
 Where to put the media:
 
 - Push the files to the orphan branch `pr-media` under `<pr-branch-name>/`. Never commit videos to `main` or to the PR branch.
-- In the PR description, embed the **GIFs** as images (`![before](https://github.com/<owner>/<repo>/raw/pr-media/<pr-branch-name>/before.gif)`), stacked full-width, each under a bold caption, and link the mp4 files for full quality.
-- Do **not** use `<video src>` pointing at a raw file URL: GitHub serves it as a download and it will not play inline. Only videos uploaded through the GitHub comment box get an inline player; that upload has no API, so a person can drag the mp4 in by hand if a real player is wanted.
+- In the PR description, put each video **alone on its own line** as a markdown link to the `.mp4`: `[Video: before (main) - what it shows](https://github.com/<owner>/<repo>/raw/pr-media/<pr-branch-name>/before.mp4)`. T3 Code's PR viewer turns a line that is only a link (or bare URL) ending in `.mp4`/`.webm`/`.mov`/`.m4v`/`.ogv`, or a standalone `<video src="...">` block, into an inline player. A link in the middle of a sentence, in a list item, or in a code block stays a plain link.
+- GitHub.com does not render a player for these. Also embed the looping **GIFs** as images (`![before](.../before.gif)`) right above each video line, stacked full-width, each under a bold caption.
+- Only a file uploaded through the GitHub comment box gets a player on GitHub.com, and that upload has no API; drag the mp4 in by hand if that is wanted.
 
 ## Commits and PRs
 
