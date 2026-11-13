@@ -67,3 +67,28 @@ test('remotion studio: frame is read live while playing, and adding a note pause
   expect(noteFrame).toBeGreaterThan(10);
   expect(Math.abs(shown - noteFrame)).toBeLessThanOrEqual(6); // paused: preview stopped near the noted frame
 });
+
+test('remotion studio: clicking a note while the preview is PLAYING seeks to the noted frame and stays there', async ({ h }) => {
+  const page = await h.context.newPage();
+  await page.goto(STUDIO);
+  await expect(page.locator('button.__remotion_input_dragger[aria-label="Frame Rate"]')).toHaveText('30fps');
+  const panel = await h.openPanel(page);
+  await panel.getByTestId('btn-review').click();
+  await expect(page.getByTestId('toolbar')).toBeVisible();
+  await page.evaluate(() => (window as any).remotion_setFrame(30, 'Hello'));
+  await expect(panel.getByTestId('tab-time')).toContainText('frame 30');
+  await page.getByTestId('btn-add-note').click();
+  await page.getByTestId('note-text').fill('Return here while playing');
+  await page.getByTestId('note-save').click();
+  await expect(page.getByTestId('toast')).toContainText('Note saved');
+
+  // play on, far past the note
+  await page.keyboard.press('Space');
+  await expect.poll(async () => Number(/frame (\d+)/.exec((await frameText(page)) ?? '')?.[1] ?? 0), { timeout: 8000 }).toBeGreaterThan(60);
+
+  await panel.getByTestId('note-card').first().getByTestId('note-goto').click();
+  await expect(panel.getByTestId('msg')).toContainText('Jumped to', { timeout: 8000 });
+  await expect.poll(() => frameText(page), { timeout: 8000 }).toBe('frame 30');
+  await page.waitForTimeout(800); // it must STAY on the noted frame (the preview was paused), not keep playing
+  expect(await frameText(page)).toBe('frame 30');
+});

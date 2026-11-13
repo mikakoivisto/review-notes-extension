@@ -97,6 +97,16 @@ function pictureRect(doc: Document): Rect | null {
 
 let reqCounter = 0;
 
+/** Polls `cond` every 50 ms until it holds or `ms` elapsed. */
+async function until(cond: () => boolean, ms: number): Promise<boolean> {
+  const t0 = Date.now();
+  for (;;) {
+    if (cond()) return true;
+    if (Date.now() - t0 > ms) return false;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+}
+
 class RemotionSession implements AdapterSession {
   capabilities = { seek: true, pause: true, frameAccurate: true };
   lastStrategy: FrameStrategy | undefined;
@@ -137,16 +147,21 @@ class RemotionSession implements AdapterSession {
     };
   }
 
-  /** Seek through the MAIN-world bridge (window.remotion_setFrame). */
+  /**
+   * Seek through the MAIN-world bridge (window.remotion_setFrame). A playing preview is paused first: seeking
+   * while it plays gets overwritten by the next tick (verified by e2e: the read-back never matched).
+   */
   async seek(t: TimeRef): Promise<boolean> {
     const s = this.snap();
     const fps = s.fps ?? t.fps;
     const frame = t.frame ?? (fps ? Math.round(t.seconds * fps) : undefined);
     if (frame === undefined) return false;
-    const ok = await callBridge(this.ctx.window, 'setFrame', { frame, composition: s.compositionId });
-    if (!ok) return false;
-    await new Promise((r) => setTimeout(r, 120));
-    return this.snap().frame === frame;
+    if (this.getState()?.paused === false) {
+      this.pause();
+      await until(() => this.getState()?.paused !== false, 1500);
+    }
+    if (!(await callBridge(this.ctx.window, 'setFrame', { frame, composition: s.compositionId }))) return false;
+    return until(() => this.snap().frame === frame, 1000);
   }
 
   pause(): void {

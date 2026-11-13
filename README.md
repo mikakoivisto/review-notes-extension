@@ -37,9 +37,11 @@ The extension id is pinned (`aaghkaonkmldbheimamdknhdgjcmjhfk`) so the companion
    Click it (or **⏵ Go to**) to seek back and see your drawing again.
 5. **Export zip** gives `notes.json`, `notes.md` and `screenshots/*.png`; **Import…** reads it back.
 
-Pages that cannot be annotated (`chrome://`, the Web Store, pages whose CSP blocks injection) still work through
-**Screenshot note** in the panel. DRM-protected video produces a black screenshot: the note keeps the timecode and
-drawing and the panel shows a warning.
+`chrome://` pages (and other browser-internal pages) can neither be annotated nor captured — Chrome refuses it, and the
+panel says so. **Screenshot note** in the panel is a fallback that needs no injection (it only uses
+`captureVisibleTab`); it was verified on a normal page, and may help where injection fails but capture is allowed.
+Strict-CSP pages are fine: the overlay does not depend on inline styles. DRM-protected video produces a black
+screenshot: the note keeps the timecode and drawing and the panel shows a warning.
 
 > The panel is the browser's side panel. It can also be opened as a normal window (**⧉** button).
 

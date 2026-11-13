@@ -1,13 +1,13 @@
 {
   "marks": {
-    "paused": 3.142,
-    "draw": 6.637,
-    "note": 10.287,
-    "list": 14.412,
-    "seek": 18.187,
-    "export": 20.759,
-    "mcp": 23.659,
-    "fixed": 29.213
+    "paused": 3.145,
+    "draw": 6.638,
+    "note": 10.273,
+    "list": 14.4,
+    "seek": 18.156,
+    "export": 20.711,
+    "mcp": 23.622,
+    "fixed": 29.186
   },
   "shots": [
     "02-annotation.png",
@@ -16,11 +16,11 @@
   "pages": {
     "main": {
       "startOffsetSec": 0,
-      "video": "raw/page@fc05ec4df8f2b77211e3331c5bb12a55.webm"
+      "video": "raw/page@912a78357555e667565491ce40800a11.webm"
     },
     "panel": {
       "startOffsetSec": 4.021,
-      "video": "raw/page@b4fa6ba8e23f58187ec18a79f0ecc3eb.webm"
+      "video": "raw/page@9c5542ec2d273ea40fdd6d4ef854924b.webm"
     }
   }
 }

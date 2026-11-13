@@ -68,7 +68,7 @@ async function pollTab() {
     document.querySelector('[data-testid=tab-time]')!.textContent = s.time ? formatTime(s.time) : 'no timecode';
     document.querySelector('[data-testid=tab-title]')!.textContent = s.title;
     $('btn-review').textContent = s.active ? 'Stop review' : 'Start review';
-    if (s.overlayFailed) showError(`Overlay could not start (${s.overlayFailed}). Use "Screenshot note".`);
+    if (s.overlayFailed) showError(`Overlay could not start (${s.overlayFailed}). "Screenshot note" may still work.`);
     renderFilters();
   } catch {
     /* tab closed */

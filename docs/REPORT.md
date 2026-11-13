@@ -1,8 +1,14 @@
 # Build report — Review Notes Extension
 
-**Result:** the MVP is built, tested and demoed locally on branch `build/review-notes-extension` (three commits, nothing pushed).
-Unit/integration: **81/81 pass**. End-to-end (real Chromium + unpacked extension): **13/13 pass**, including real Remotion
-Studio and real YouTube. Demo recorded.
+**Result:** the MVP works end to end in automation, but **four things were never run by a human or a test** — verify them first:
+1. The **toolbar button**, the **`Alt+Shift+N` shortcut** and the browser's **real side panel** (`chrome.sidePanel.open`). Playwright cannot
+   drive them; the same panel page is tested as a popup window instead.
+2. **T3 Code's own MCP settings screen** — only the Claude Code / Codex harness configs (README) are documented, not T3's UI.
+3. **Screenshots on `chrome://` pages after a real toolbar invocation** (activeTab). From the panel button Chrome refuses it (tested).
+4. Anything on **Windows/Linux or other Chromium browsers** — only macOS + Playwright's Chromium 158 were used.
+
+Everything else is on branch `build/review-notes-extension` (three commits plus this fix commit; **nothing pushed, `main` untouched**).
+Unit/integration **81/81**, end-to-end **14/14** (real Chromium + unpacked extension, real Remotion Studio, real YouTube), demo recorded.
 
 ## What was built
 - **Extension** (MV3, TypeScript, esbuild): on-demand injection, Shadow-DOM overlay (pen, arrow, box, circle, text, pin, eraser,
@@ -18,18 +24,19 @@ Studio and real YouTube. Demo recorded.
 | Suite | Command | Result |
 |---|---|---|
 | Unit + companion + MCP (Vitest) | `npm test` | **81 passed**, 0 failed |
-| E2E (Playwright, unpacked extension) | `npm run test:e2e` | **13 passed**, 0 failed, 0 skipped |
+| E2E (Playwright, unpacked extension) | `npm run test:e2e` | **14 passed**, 0 failed, 0 skipped |
 | Demo | `node scripts/record-demo.mjs` | 1 passed |
 
 E2E covers: video note flow with seek-back, strict-CSP page, black (DRM-like) video, plain page with scroll restore,
 screenshot-only fallback + unsupported-page message, filter/edit/delete, **service-worker kill/restart**, export → delete → import,
 companion sync + MCP client `list_notes`/`get_screenshot`/`mark_fixed` + panel shows the agent's reply, companion offline,
-**Remotion Studio** (frame read while paused and playing, seek back through the bridge), **YouTube** (real network; the test skips
+**Remotion Studio** (frame read while paused and playing, seek back through the bridge, **click-to-seek while the preview is playing**), **YouTube** (real network; the test skips
 itself on no network, consent wall or ads).
 MCP is tested with an in-memory client, a **real stdio process** and a **real HTTP daemon** (cross-process file visibility).
 
 Bugs the tests caught and that are fixed: `Origin` missing on extension GETs (sync would never have worked), drawing/controls
-defeating black-frame detection, tombstones blocking re-import, an empty-list message typo.
+defeating black-frame detection, tombstones blocking re-import, an empty-list message typo, **Remotion seek failing while the preview
+plays** (the adapter now pauses first), and docs that recommended "Screenshot note" for `chrome://` pages (Chrome refuses it there).
 
 ## Demo
 - `demo/demo.webm` (VP9) and `demo/demo.mp4` (H.264) — 33 s, page window and notes-panel window side by side.
@@ -42,9 +49,9 @@ defeating black-frame detection, tombstones blocking re-import, an empty-list me
   during screenshots); the "MCP console" is a page that displays the real output of the test's MCP calls.
 
 ## Known limitations
-- **Not exercised in automation** (Playwright cannot): the toolbar button, the `Alt+Shift+N` shortcut and the browser's *real* side panel
-  (`chrome.sidePanel.open`). The same panel page is tested as a popup window. Verify these by hand once.
-- **T3 Code**: its own MCP settings screen was not verified; README documents the Claude Code / Codex harness configs it relies on.
+- **Not exercised** — see the list at the top (toolbar button, shortcut, real side panel, T3 Code UI, other OSes).
+- **Local API trust**: `/api` accepts `Sec-Fetch-Site: none` GETs, so another *installed browser extension* with localhost access could read
+  your notes from the companion. Web pages cannot (Host/Origin/Sec-Fetch checks). Mitigation if needed: an optional shared token.
 - **Remotion** depends on undocumented Studio internals, verified on 4.0.543 only; no seek fallback without the bridge.
 - Top-frame videos only (no cross-origin iframes); review mode is not restored after a page reload (press the icon again).
 - DRM video: screenshots are black (flagged, note + timecode kept). Black detection cannot tell a legitimately black frame from DRM.

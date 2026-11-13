@@ -158,16 +158,19 @@ idempotent where possible.
   ≈ 0 *while the media reports it is not at a legitimately black moment* (we cannot know; so we merely flag),
   `screenshot.suspectedBlack = true`. UI shows "Screenshot looks black (DRM-protected or empty frame)". The note
   still keeps timecode and annotation vectors.
-- **Fallback mode** (no injection possible — `chrome://`, Web Store, strict-CSP failure, PDF viewer): side panel
-  button **Screenshot note** → SW captures the visible tab, creates a note with `adapter: "none"`, no time, no
-  annotation. Never blocked by page CSP because it uses extension APIs only.
+- **Fallback mode** (injection fails but capture may still work): side panel button **Screenshot note** → SW
+  captures the visible tab, creates a note with `adapter: "none"`, no time, no annotation. It does not depend on
+  injection, so page CSP cannot block it. **Verified on a normal page; `chrome://` pages are refused by Chrome**
+  ("activeTab permission is not in effect…") — there is no fallback for those. Whether capture works on `chrome://`
+  after a real toolbar-button invocation (activeTab) is unverified.
 
 ### 3.6 Failure/degradation matrix
 | Situation | Behaviour |
 |-----------|-----------|
 | DRM video (Widevine/EME) | Screenshot flagged `suspectedBlack`; note + time + vectors kept |
 | Page CSP blocks overlay | Constructable stylesheets + Shadow DOM first; if mount still fails, report and offer fallback mode |
-| `chrome://`, Web Store, `file://` without permission | Fallback mode (or message explaining why not possible) |
+| `chrome://`, Web Store | Unsupported: a clear message (capture is refused by Chrome; verified for `chrome://`) |
+| `file://` without "allow access to file URLs" | Injection fails → message; Screenshot note may work |
 | No media found | Overlay anchors to viewport; notes store scroll + viewport size |
 | Media inside cross-origin iframe | Not detected (MVP); page-mode notes work |
 | Service worker restarted | No state lost (stateless); content script re-registers on next message |
@@ -524,6 +527,8 @@ Things the spec got wrong or did not foresee, found by the e2e/unit tests; the s
    so the notes panel is opened as a popup window (also shipped as the panel's "⧉" button).
 5. **Bundle size**: zod (classic) adds ~440 KB to the panel/service-worker/options bundles. The content script is
    zod-free (≈30 KB). `zod/mini` would shrink the others.
-6. **`remotion_setFrame` verified**: it moves the playhead, updates the preview and `remotion.time-all`, both
-   paused and while playing (e2e). `window.remotion_calculateComposition`/`remotion_getCompositionNames` exist only
+6. **`remotion_setFrame` verified**: it moves the playhead, updates the preview and `remotion.time-all` while
+   paused (e2e). **Seeking while the preview is playing failed** (the read-back never matched), so the adapter now
+   pauses first; e2e verifies click-to-seek during playback lands on, and stays on, the noted frame. `window.remotion_calculateComposition`/`remotion_getCompositionNames` exist only
    in render mode, not in the Studio, so fps/duration/size are read from the Studio UI buttons.
+7. **Capture on `chrome://` pages is refused** from the panel button (verified); see §3.5.

@@ -101,11 +101,11 @@ async function ensureInjected(tabId: number): Promise<void> {
     /* not injected yet */
   }
   const tab = await chrome.tabs.get(tabId);
-  if (!isWebUrl(tab.url)) throw new SwError(`This page (${tab.url?.split(':')[0] ?? 'unknown'}:) cannot be annotated. Use "Screenshot note" instead.`, 'CANNOT_INJECT');
+  if (!isWebUrl(tab.url)) throw new SwError(`This page (${tab.url?.split(':')[0] ?? 'unknown'}:) cannot be annotated or captured by the extension.`, 'CANNOT_INJECT');
   try {
     await chrome.scripting.executeScript({ target: { tabId }, files: ['content.js'] });
   } catch (e) {
-    throw new SwError(`Cannot inject into this page (${e instanceof Error ? e.message : e}). Use "Screenshot note" instead.`, 'CANNOT_INJECT');
+    throw new SwError(`Cannot inject into this page (${e instanceof Error ? e.message : e}). "Screenshot note" uses a different API and may still work.`, 'CANNOT_INJECT');
   }
 }
 

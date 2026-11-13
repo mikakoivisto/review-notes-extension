@@ -72,6 +72,12 @@ test('screenshot-only fallback note (no injection needed) and unsupported pages 
   const panel2 = await h.openPanel(chromePage);
   await panel2.getByTestId('btn-review').click();
   await expect(panel2.getByTestId('error')).toContainText('cannot be annotated');
+  // Chrome refuses capture on chrome:// pages from the panel button (verified): an error, never a bogus note
+  const before = await panel2.getByTestId('note-card').count();
+  await panel2.getByTestId('btn-shot').click();
+  await expect(panel2.getByTestId('error')).toBeVisible();
+  await expect(panel2.getByTestId('error')).toContainText(/activeTab|cannot|permission/i);
+  expect(await panel2.getByTestId('note-card').count()).toBe(before);
 });
 
 test('panel: filter by status, edit text/type, delete with confirmation', async ({ h }) => {
