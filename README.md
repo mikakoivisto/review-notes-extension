@@ -10,6 +10,10 @@ T3 Code, any MCP client) so they can read them, look at the screenshots and mark
 - **MCP**: `list_notes`, `get_note`, `get_screenshot`, `update_note_status`, `mark_fixed`, `claim_notes` (stdio + HTTP).
 - **Local-first**: nothing leaves your machine unless you turn on companion sync (and that only talks to `127.0.0.1`).
 
+![Demo: pause a video, draw on it, add a note, seek back from the notes list, export, and let an agent mark it fixed via MCP](demo/demo.gif)
+
+[Full-quality demo video (mp4, 34 s)](demo/demo.mp4)
+
 Design details: [docs/SPEC.md](docs/SPEC.md) · JSON schema: [docs/note.schema.json](docs/note.schema.json)
 
 ## Install (load unpacked)
