@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Review Notes</title>
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+  <header>
+    <div class="row top">
+      <strong>Review Notes</strong>
+      <span class="spacer"></span>
+      <button id="btn-window" data-testid="btn-window" title="Open in a separate window">⧉</button>
+      <button id="btn-options" data-testid="btn-options" title="Settings">⚙</button>
+    </div>
+    <div class="tabinfo" data-testid="tabinfo">
+      <span data-testid="tab-adapter">–</span> · <span data-testid="tab-time">–</span>
+      <div class="muted ellipsis" data-testid="tab-title"></div>
+    </div>
+    <div class="row">
+      <button id="btn-review" data-testid="btn-review" class="primary">Start review</button>
+      <button id="btn-shot" data-testid="btn-shot" title="Screenshot-only note (works on pages that cannot be annotated)">Screenshot note</button>
+    </div>
+    <div id="error" class="error" data-testid="error" hidden></div>
+  </header>
+
+  <nav class="filters" id="filters"></nav>
+  <label class="scope"><input type="checkbox" id="scope-page" data-testid="scope-page" /> This page only</label>
+
+  <main id="list" data-testid="notes-list"></main>
+
+  <footer>
+    <div class="row">
+      <button id="btn-export" data-testid="btn-export">Export zip</button>
+      <button id="btn-import" data-testid="btn-import">Import…</button>
+      <input type="file" id="file-import" data-testid="file-import" accept=".zip,.json,application/zip,application/json" hidden />
+    </div>
+    <div class="muted" id="sync" data-testid="sync-status"></div>
+    <div class="muted" id="msg" data-testid="msg"></div>
+  </footer>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

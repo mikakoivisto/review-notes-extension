@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Review Notes — Settings</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <h1>Review Notes — Settings</h1>
+  <section>
+    <h2>Companion (optional)</h2>
+    <p class="muted">The companion is a small local Node program that mirrors your notes to files and serves them to AI agents over MCP. Nothing leaves this machine except traffic to the address below.</p>
+    <label><input type="checkbox" id="sync-enabled" data-testid="sync-enabled" /> Sync notes with the companion</label>
+    <label>Companion URL <input type="text" id="url" data-testid="companion-url" value="http://127.0.0.1:47821" /></label>
+    <div class="row">
+      <button id="save" data-testid="save-settings">Save</button>
+      <button id="test" data-testid="test-sync">Sync now</button>
+    </div>
+    <p id="status" class="muted" data-testid="options-status"></p>
+  </section>
+  <section>
+    <h2>Privacy</h2>
+    <ul>
+      <li>Notes and screenshots are stored in this browser (IndexedDB). Nothing is sent anywhere by default.</li>
+      <li>The extension does nothing on a page until you start a review on that tab.</li>
+      <li>No analytics, no remote code. Screenshots may contain sensitive page content — export and sync are explicit actions.</li>
+    </ul>
+  </section>
+  <script src="options.js"></script>
+</body>
+</html>

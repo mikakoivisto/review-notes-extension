@@ -1,0 +1,486 @@
+{
+  "title": "Review Notes Note (schemaVersion 1)",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "url": {
+      "type": "string"
+    },
+    "pageTitle": {
+      "type": "string"
+    },
+    "adapter": {
+      "type": "string",
+      "enum": [
+        "remotion",
+        "youtube",
+        "html5-video",
+        "generic",
+        "none"
+      ]
+    },
+    "media": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "video",
+                "composition"
+              ]
+            },
+            "durationSeconds": {
+              "type": "number"
+            },
+            "width": {
+              "type": "number"
+            },
+            "height": {
+              "type": "number"
+            },
+            "videoId": {
+              "type": "string"
+            },
+            "compositionId": {
+              "type": "string"
+            },
+            "src": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "time": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "seconds": {
+              "type": "number",
+              "minimum": 0
+            },
+            "frame": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "fps": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "seconds"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "visual",
+        "timing",
+        "sound",
+        "text",
+        "general"
+      ]
+    },
+    "text": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "in_progress",
+        "fixed",
+        "wontfix"
+      ]
+    },
+    "reply": {
+      "type": "string"
+    },
+    "annotation": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "anchor": {
+              "type": "string",
+              "enum": [
+                "media",
+                "viewport"
+              ]
+            },
+            "aspect": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "shapes": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "t": {
+                        "type": "string",
+                        "const": "pen"
+                      },
+                      "c": {
+                        "type": "string"
+                      },
+                      "sw": {
+                        "type": "number"
+                      },
+                      "pts": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "prefixItems": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ],
+                          "items": false,
+                          "minItems": 2,
+                          "maxItems": 2
+                        }
+                      }
+                    },
+                    "required": [
+                      "t",
+                      "c",
+                      "sw",
+                      "pts"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "t": {
+                        "type": "string",
+                        "const": "arrow"
+                      },
+                      "c": {
+                        "type": "string"
+                      },
+                      "sw": {
+                        "type": "number"
+                      },
+                      "from": {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 2,
+                        "maxItems": 2
+                      },
+                      "to": {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 2,
+                        "maxItems": 2
+                      }
+                    },
+                    "required": [
+                      "t",
+                      "c",
+                      "sw",
+                      "from",
+                      "to"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "t": {
+                        "type": "string",
+                        "const": "box"
+                      },
+                      "c": {
+                        "type": "string"
+                      },
+                      "sw": {
+                        "type": "number"
+                      },
+                      "x": {
+                        "type": "number"
+                      },
+                      "y": {
+                        "type": "number"
+                      },
+                      "w": {
+                        "type": "number"
+                      },
+                      "h": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "t",
+                      "c",
+                      "sw",
+                      "x",
+                      "y",
+                      "w",
+                      "h"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "t": {
+                        "type": "string",
+                        "const": "circle"
+                      },
+                      "c": {
+                        "type": "string"
+                      },
+                      "sw": {
+                        "type": "number"
+                      },
+                      "x": {
+                        "type": "number"
+                      },
+                      "y": {
+                        "type": "number"
+                      },
+                      "w": {
+                        "type": "number"
+                      },
+                      "h": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "t",
+                      "c",
+                      "sw",
+                      "x",
+                      "y",
+                      "w",
+                      "h"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "t": {
+                        "type": "string",
+                        "const": "text"
+                      },
+                      "c": {
+                        "type": "string"
+                      },
+                      "size": {
+                        "type": "number"
+                      },
+                      "x": {
+                        "type": "number"
+                      },
+                      "y": {
+                        "type": "number"
+                      },
+                      "text": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "t",
+                      "c",
+                      "size",
+                      "x",
+                      "y",
+                      "text"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "t": {
+                        "type": "string",
+                        "const": "pin"
+                      },
+                      "c": {
+                        "type": "string"
+                      },
+                      "x": {
+                        "type": "number"
+                      },
+                      "y": {
+                        "type": "number"
+                      },
+                      "label": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "t",
+                      "c",
+                      "x",
+                      "y"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          },
+          "required": [
+            "anchor",
+            "aspect",
+            "shapes"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "screenshot": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "annotated": {
+              "type": "string"
+            },
+            "clean": {
+              "type": "string"
+            },
+            "width": {
+              "type": "number"
+            },
+            "height": {
+              "type": "number"
+            },
+            "crop": {
+              "type": "string",
+              "enum": [
+                "media",
+                "viewport"
+              ]
+            },
+            "suspectedBlack": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "annotated",
+            "width",
+            "height",
+            "crop",
+            "suspectedBlack"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "scrollX": {
+          "type": "number"
+        },
+        "scrollY": {
+          "type": "number"
+        },
+        "viewportWidth": {
+          "type": "number"
+        },
+        "viewportHeight": {
+          "type": "number"
+        },
+        "devicePixelRatio": {
+          "type": "number"
+        },
+        "userAgent": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "scrollX",
+        "scrollY",
+        "viewportWidth",
+        "viewportHeight",
+        "devicePixelRatio"
+      ],
+      "additionalProperties": false
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "seq",
+    "url",
+    "pageTitle",
+    "adapter",
+    "media",
+    "time",
+    "type",
+    "text",
+    "status",
+    "annotation",
+    "screenshot",
+    "context",
+    "createdAt",
+    "updatedAt"
+  ],
+  "additionalProperties": false
+}

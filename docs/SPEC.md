@@ -226,14 +226,14 @@ interface Annotation {
   shapes: Shape[];
 }
 // Coordinates are normalised 0..1 relative to the anchor rect (resolution independent).
+// `c` = colour, `sw` = stroke width as a fraction of anchor height, `size` = text height (same unit).
 type Shape =
-  | { t: 'pen';    c: string; w: number; pts: [number, number][] }
-  | { t: 'arrow';  c: string; w: number; from: [number, number]; to: [number, number] }
-  | { t: 'box';    c: string; w: number; x: number; y: number; w2: number; h: number }
-  | { t: 'circle'; c: string; w: number; x: number; y: number; w2: number; h: number } // bounding box of ellipse
-  | { t: 'text';   c: string; size: number; x: number; y: number; text: string }       // size = fraction of anchor height
+  | { t: 'pen';    c: string; sw: number; pts: [number, number][] }
+  | { t: 'arrow';  c: string; sw: number; from: [number, number]; to: [number, number] }
+  | { t: 'box';    c: string; sw: number; x: number; y: number; w: number; h: number }
+  | { t: 'circle'; c: string; sw: number; x: number; y: number; w: number; h: number } // bounding box of the ellipse
+  | { t: 'text';   c: string; size: number; x: number; y: number; text: string }       // (x, y) = text baseline start
   | { t: 'pin';    c: string; x: number; y: number; label?: string };
-// `w` = stroke width as a fraction of anchor height.
 
 interface ScreenshotRef {
   annotated: string;          // relative path, "screenshots/<id>.png"
@@ -337,7 +337,7 @@ Remotion's Studio DOM is **undocumented**. Investigated live against Remotion St
 | Duration / size | `aria-label="Duration"` (`MM:SS.FF`, frames at fps), `aria-label="Width"/"Height"` (`1280px`) | |
 | Composition id | `location.pathname` (`/Hello`, nested `/Folder/Comp`) minus leading `/` | Also the key in `remotion.time-all`. |
 | Picture rect | `.remotion-studio-composition-container` bounding rect | Scaled preview; stable class name in 4.0.543. |
-| **Seek** | `window.remotion_setFrame(frame, compositionId)` *(main world only)* | Verified: moves the playhead, updates the preview and `remotion.time-all`. Needs the MAIN-world bridge. Fallbacks (isolated world): click the timeline ruler at the computed x; keyboard `ArrowLeft/ArrowRight` (±1 frame) / `Shift+Arrow` (±1 s) after focusing the preview. |
+| **Seek** | `window.remotion_setFrame(frame, compositionId)` *(main world only)* | Verified: moves the playhead, updates the preview and `remotion.time-all`. Needs the MAIN-world bridge. No isolated-world fallback is implemented: without the bridge the adapter reports `seek` as failed (reading still works). Studio keyboard shortcuts (`ArrowLeft/Right` = ±1 frame) were observed but are not used because they cannot jump to an arbitrary frame. |
 | Pause | `Space` toggles play in the Studio; adapter only presses it when `paused === false` (determined by two differing frame reads 100 ms apart) | Heuristic. |
 
 Resolution order for `getState()`: (1) live dragger `aria-label` frame → (2) parse the `MM:SS.FF` text × fps →
@@ -350,7 +350,7 @@ A Remotion upgrade can break any of them. Mitigations: all Remotion knowledge li
 pins the observed DOM; an **e2e test** runs against a real Studio started from `examples/remotion-sample`
 (pinned 4.0.543) so a drift shows up in CI; the adapter logs which strategy answered; if every strategy fails,
 `getState()` returns `null` and the registry falls back to `generic` (page note, no timecode). `remotion_setFrame`
-behaviour *during playback* is verified in e2e (seek then read back).
+behaviour is verified in e2e (seek, then read back from both the Studio DOM and the adapter).
 
 ### 5.4 `generic` (priority 0)
 No time. Anchor = viewport; notes record scroll + viewport size; "go to" restores scroll.
@@ -377,20 +377,22 @@ The stdio MCP process spawned by an agent is a *different process* from the HTTP
 atomic (`write tmp` → `rename`). Both processes therefore see each other's changes.
 
 ### 6.3 Extension ⇄ companion sync (HTTP)
+Stateless reconciliation — idempotent, safe to run at any time, no cursors:
 - `GET /api/health` → `{ ok, version, dir, noteCount }`.
-- `GET /api/notes?since=<ISO>` → notes changed after cursor (incl. tombstones `{id, deleted: true, updatedAt}`).
-- `PUT /api/notes/:id` — body: Note JSON; `PUT /api/notes/:id/screenshot/:kind` — raw PNG.
-- `DELETE /api/notes/:id` → writes a tombstone.
-- Merge rule: **per-note last-writer-wins on `updatedAt`**. Agent changes (`mark_fixed`) bump `updatedAt`, so
-  the extension pulls them. Known race: editing the *text* in the panel at the same instant the agent changes
-  *status* can lose one side (documented; field-level merge is a future improvement).
-- Extension push: after local changes (debounced 1 s) when sync is enabled. Pull: on side-panel open/focus,
-  after push, and every 60 s via `chrome.alarms`.
+- `GET /api/sync/index` → `{ dir, notes: [{id, updatedAt, shots}], tombstones: [{id, updatedAt}] }`.
+- `GET|PUT /api/notes/:id` (note JSON), `DELETE /api/notes/:id` (body `{updatedAt}`; writes a tombstone).
+- `GET|PUT /api/notes/:id/screenshot/:kind` (raw PNG; screenshots are immutable, transferred only when missing).
+- The extension compares indexes: **per-note last-writer-wins on `updatedAt`**; tombstones propagate deletes.
+  Agent changes (`mark_fixed`) bump `updatedAt`, so the next reconcile pulls them. Known race: editing the
+  *text* in the panel at the same instant the agent changes *status* can lose one side (field-level merge is
+  future work).
+- Reconcile runs: after each local change (immediately, best effort), on panel focus, on options "Sync now",
+  and every 60 s via `chrome.alarms` while sync is enabled.
 - **Security**: bind `127.0.0.1`; reject requests whose `Host` is not `127.0.0.1:<port>`/`localhost:<port>`
   (DNS rebinding); `/api/*` additionally requires `Origin: chrome-extension://<id>` where the id is pinned by
   the manifest `key` (a web page can never forge `Origin`; non-browser clients are not supported on `/api`).
   `/mcp` accepts requests **without** an `Origin` header (MCP clients) and rejects any browser origin.
-  Request body size cap 25 MB.
+  Request body size cap 25 MB (2 MB on `/mcp`).
 
 ### 6.4 Native messaging (future)
 Would remove the port, but needs a host manifest installed outside the repo (per-OS path) and the extension
@@ -448,8 +450,8 @@ Privacy statement (also in README and options page):
 |-------|---------|------|
 | Unit | Vitest (+ happy-dom for DOM) | schema/validation, time formatting, drawing engine (shapes, eraser, undo/redo, normalisation), export/import round trip, zip writer/reader, Markdown rendering, adapters against fixtures (HTML5 stub, YouTube DOM, **Remotion Studio DOM fixture**), file store + lock, HTTP Origin/Host checks |
 | MCP | `@modelcontextprotocol/sdk` client over **stdio** and **streamable HTTP** | tools/list, list_notes, get_note, get_screenshot (image content), mark_fixed, claim_notes; cross-process visibility |
-| E2E | Playwright, `launchPersistentContext` with `--disable-extensions-except/--load-extension`, `channel: 'chromium'` (full Chromium; the headless shell cannot load extensions) | local page with `<video>`; strict-CSP page; real **Remotion Studio** (`examples/remotion-sample`, started by Playwright `webServer`, torn down automatically); **YouTube** (skipped gracefully on no network/consent wall); side panel opened as a **tab** with `?tabId=` |
-| Demo | Playwright `recordVideo` on both pages, stitched side-by-side by ffmpeg | §9 |
+| E2E | Playwright, `launchPersistentContext` with `--disable-extensions-except/--load-extension`, `channel: 'chromium'` (full Chromium; the headless shell cannot load extensions) | local page with `<video>`; strict-CSP page; real **Remotion Studio** (`examples/remotion-sample`, started by Playwright `webServer`, torn down automatically); **YouTube** (skipped gracefully on no network/consent wall); the notes panel opened as a separate **popup window** (`chrome.windows.create`) with `?tabId=`, so both pages are visible and each tab stays foreground in its own window |
+| Demo | Playwright `recordVideo` on the page window and the panel window, stitched side-by-side by ffmpeg | §9 |
 
 Test constraints designed in up front:
 - Playwright **cannot click the toolbar action nor drive the real side panel** → `host_permissions` +

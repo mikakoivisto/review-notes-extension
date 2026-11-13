@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Review Notes",
+  "version": "0.1.0",
+  "description": "Timestamped notes, drawings and screenshots for reviewing videos and web pages. Local-first, with an MCP hand-off to AI agents.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoi7nlqY5v+ocxAhD/hjMQ+J1MKa3a2e0qUYpnGL1JkpAKfRF+sH2YVOcY8whHMkp8y6zEdC8YollWEpsQImpDGr5p+i79IYuvvn4Oh2v8OJCbpHPXopH3QYlXd4hiA8LZECgetV9hwl8RBCAq0WDeCclPyGmtQM3r2Mu1lofQQaQfw1Uve9Gj9+eL8QEp1uItbwacXNL/qygEr0C3st3+HZ3KmAiugKANWw+Rt0vav/uoJ9fNnkIthGPEqFYsgUf6wBB2o6g+aaAbhSERtQ/TsiotizumMSR4yHpvW4vFOEYqTrzWCuh/VGCYRICXiAYYTd9rDkqI5VLDEwrLwiX4QIDAQAB",
+  "minimum_chrome_version": "116",
+  "permissions": ["storage", "unlimitedStorage", "sidePanel", "scripting", "tabs", "alarms"],
+  "host_permissions": ["<all_urls>"],
+  "background": { "service_worker": "background.js" },
+  "action": {
+    "default_title": "Review Notes: start review on this tab",
+    "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png" }
+  },
+  "side_panel": { "default_path": "sidepanel.html" },
+  "options_page": "options.html",
+  "commands": {
+    "toggle-review": {
+      "suggested_key": { "default": "Alt+Shift+N" },
+      "description": "Toggle review mode on the current tab"
+    }
+  },
+  "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+}

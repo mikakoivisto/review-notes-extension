@@ -1,0 +1,8 @@
+:root { color-scheme: light dark; }
+body { font: 14px/1.5 system-ui, sans-serif; max-width: 640px; margin: 24px auto; padding: 0 16px; }
+section { margin: 20px 0; padding: 14px; border: 1px solid #8884; border-radius: 10px; }
+label { display: block; margin: 8px 0; }
+input[type=text] { width: 100%; padding: 6px; margin-top: 4px; }
+.row { display: flex; gap: 8px; }
+button { padding: 6px 14px; }
+.muted { color: #888; }
