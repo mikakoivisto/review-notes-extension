@@ -48,8 +48,9 @@ How to record (Playwright is already set up for it):
 
 Where to put the media:
 
-- Push the files to the orphan branch `pr-media` under `<pr-branch-name>/`. Never commit videos to `main` or to the PR branch.
-- In the PR description, put each video **alone on its own line** as a markdown link to the `.mp4`: `[Video: before (main) - what it shows](https://github.com/<owner>/<repo>/raw/pr-media/<pr-branch-name>/before.mp4)`. T3 Code's PR viewer turns a line that is only a link (or bare URL) ending in `.mp4`/`.webm`/`.mov`/`.m4v`/`.ogv`, or a standalone `<video src="...">` block, into an inline player. A link in the middle of a sentence, in a list item, or in a code block stays a plain link.
+- Create one **prerelease** named `pr-evidence-<PR number>-<yyyymmdd>` and attach the mp4, gif and png files to it (`gh release create <tag> --prerelease --title "PR #<n> evidence" --notes "..." files...`). Never commit videos to the repo.
+- Create it in the repo your PR branch lives in: **your fork** if you are a contributor without write access, this repo if you are a maintainer. Release assets from a fork render fine in a PR on the upstream repo.
+- In the PR description, put each video **alone on its own line** as a markdown link to the `.mp4`: `[Video: before (main) - what it shows](https://github.com/<owner>/<repo>/releases/download/<tag>/before.mp4)`. T3 Code's PR viewer turns a line that is only a link (or bare URL) ending in `.mp4`/`.webm`/`.mov`/`.m4v`/`.ogv`, or a standalone `<video src="...">` block, into an inline player. A link in the middle of a sentence, in a list item, or in a code block stays a plain link.
 - GitHub.com does not render a player for these. Also embed the looping **GIFs** as images (`![before](.../before.gif)`) right above each video line, stacked full-width, each under a bold caption.
 - Only a file uploaded through the GitHub comment box gets a player on GitHub.com, and that upload has no API; drag the mp4 in by hand if that is wanted.
 
