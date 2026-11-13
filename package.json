@@ -11,7 +11,8 @@
     "test": "npm run build && vitest run",
     "test:e2e": "npm run build && playwright test",
     "schema": "node scripts/gen-schema.mjs",
-    "companion": "node dist/companion/cli.js serve"
+    "companion": "node dist/companion/cli.js serve",
+    "prepare": "npm run build"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.0",

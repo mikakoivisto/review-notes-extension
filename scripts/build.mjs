@@ -1,6 +1,6 @@
 // Builds the extension (dist/extension) and the companion (dist/companion) with esbuild.
 import { build, context } from 'esbuild';
-import { cpSync, mkdirSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
+import { chmodSync, cpSync, mkdirSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 
 const watch = process.argv.includes('--watch');
 const ext = 'dist/extension';
@@ -51,3 +51,6 @@ if (watch) {
   for (const j of jobs) await build(j);
   copyStatic();
 }
+
+// npx runs the bin directly, so it must be executable (esbuild does not set the bit).
+try { chmodSync('dist/companion/cli.js', 0o755); } catch { /* watch mode: not built yet */ }
