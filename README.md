@@ -140,3 +140,7 @@ a tab, has no analytics and loads no remote code. With sync enabled it talks onl
 
 See the end of the report / SPEC §3.6 and §11: top-frame videos only (no cross-origin iframes), DRM screenshots are
 black, per-note last-writer-wins sync, Remotion internals are undocumented, bundles include zod (~450 KB).
+
+## License
+
+[MIT](LICENSE)
