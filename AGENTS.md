@@ -48,8 +48,10 @@ How to record (Playwright is already set up for it):
 
 Where to put the media:
 
-- Push the files to the orphan branch `pr-media` under `<pr-branch-name>/`. Never commit videos to `main` or to the PR branch.
-- In the PR description, put each video **alone on its own line** as a markdown link to the `.mp4`: `[Video: before (main) - what it shows](https://github.com/<owner>/<repo>/raw/pr-media/<pr-branch-name>/before.mp4)`. T3 Code's PR viewer turns a line that is only a link (or bare URL) ending in `.mp4`/`.webm`/`.mov`/`.m4v`/`.ogv`, or a standalone `<video src="...">` block, into an inline player. A link in the middle of a sentence, in a list item, or in a code block stays a plain link.
+- Put the files in one **secret gist** of your own account, one gist per PR. It adds nothing to this repo's releases, branches or tags, and works for contributors without write access. Never commit videos to `main` or to the PR branch, and do not use releases or extra branches for media.
+- Create and push it with `gh`, which uses the login in `~/.config/gh/hosts.yml`. `gh gist create` refuses binaries, so create the gist with a README, clone it, add the files, and push with gh as the credential helper: `gh gist create README.md -d "PR #<n> evidence"`, then `git clone https://gist.github.com/<id>.git`, copy the files in, commit, and `git -c credential.helper= -c credential.helper='!gh auth git-credential' push origin HEAD`.
+- Use the pinned raw URLs from `gh api gists/<id> --jq '.files[].raw_url'` (they contain the commit hash). The unpinned `.../raw/<file>` form can return 404.
+- In the PR description, put each video **alone on its own line** as a markdown link to the `.mp4`: `[Video: before (main) - what it shows](https://gist.githubusercontent.com/<user>/<id>/raw/<hash>/before.mp4)`. T3 Code's PR viewer turns a line that is only a link (or bare URL) ending in `.mp4`/`.webm`/`.mov`/`.m4v`/`.ogv`, or a standalone `<video src="...">` block, into an inline player. A link in the middle of a sentence, in a list item, or in a code block stays a plain link.
 - GitHub.com does not render a player for these. Also embed the looping **GIFs** as images (`![before](.../before.gif)`) right above each video line, stacked full-width, each under a bold caption.
 - Only a file uploaded through the GitHub comment box gets a player on GitHub.com, and that upload has no API; drag the mp4 in by hand if that is wanted.
 
