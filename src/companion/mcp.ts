@@ -55,7 +55,10 @@ export function createMcpServer(store: NoteStore): McpServer {
     },
     async (a) => {
       const notes = await store.list({ status: a.status ?? 'open', url: a.url, type: a.type, adapter: a.adapter, limit: a.limit });
-      if (!notes.length) return text(`No ${a.status && a.status !== 'all' ? a.status : a.status === 'all' ? '' : 'open '}notes.`.replace('  ', ' '), { notes: [] });
+      if (!notes.length) {
+        const which = a.status === 'all' ? '' : `${(a.status ?? 'open').replace('_', ' ')} `;
+        return text(`No ${which}notes.`, { notes: [] });
+      }
       return text(`${notes.length} note(s) in ${store.dir}:\n` + notes.map(noteLine).join('\n'), { notes: notes.map((n) => ({ id: n.id, seq: n.seq, status: n.status, type: n.type, url: n.url, time: n.time, text: n.text, adapter: n.adapter, hasScreenshot: !!n.screenshot })) });
     },
   );

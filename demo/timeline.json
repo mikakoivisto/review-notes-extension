@@ -1,0 +1,26 @@
+{
+  "marks": {
+    "paused": 3.142,
+    "draw": 6.637,
+    "note": 10.287,
+    "list": 14.412,
+    "seek": 18.187,
+    "export": 20.759,
+    "mcp": 23.659,
+    "fixed": 29.213
+  },
+  "shots": [
+    "02-annotation.png",
+    "05-seek-back-with-ghost.png"
+  ],
+  "pages": {
+    "main": {
+      "startOffsetSec": 0,
+      "video": "raw/page@fc05ec4df8f2b77211e3331c5bb12a55.webm"
+    },
+    "panel": {
+      "startOffsetSec": 4.021,
+      "video": "raw/page@b4fa6ba8e23f58187ec18a79f0ecc3eb.webm"
+    }
+  }
+}

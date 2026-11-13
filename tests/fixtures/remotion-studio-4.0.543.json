@@ -1,0 +1,14 @@
+{
+  "remotionVersion": "4.0.543",
+  "title": "Hello / remotion-sample - Remotion Studio",
+  "pathname": "/Hello",
+  "localStorageTimeAll": "{\"Hello\":42}",
+  "draggers": [
+    "<button type=\"button\" aria-label=\"Width\" aria-hidden=\"false\" class=\"__remotion_input_dragger\"><span>1280px</span></button>",
+    "<button type=\"button\" aria-label=\"Height\" aria-hidden=\"false\" class=\"__remotion_input_dragger\"><span>720px</span></button>",
+    "<button type=\"button\" aria-label=\"Duration\" aria-hidden=\"false\" class=\"__remotion_input_dragger\"><span>00:05.00</span></button>",
+    "<button type=\"button\" aria-label=\"Frame Rate\" aria-hidden=\"false\" class=\"__remotion_input_dragger\"><span>30fps</span></button>",
+    "<button type=\"button\" aria-label=\"42\" aria-hidden=\"false\" class=\"__remotion_input_dragger\"><span>00:01.12</span></button>"
+  ],
+  "containerClass": "remotion-studio-composition-container"
+}

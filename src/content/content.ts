@@ -93,7 +93,8 @@ function init(): Instance {
       },
     });
     overlay.resetDrawing();
-    if (!warning && screenshots.annotated?.suspectedBlack) warning = 'The screenshot looks black (DRM-protected video?). Timecode and drawing were kept.';
+    // judge blackness on the CLEAN capture: our own drawing on top would make a black frame look "not black"
+    if (!warning && (screenshots.clean ?? screenshots.annotated)?.suspectedBlack) warning = 'The screenshot looks black (DRM-protected video?). Timecode and drawing were kept.';
     return warning ? { warning } : undefined;
   }
 

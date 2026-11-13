@@ -86,3 +86,47 @@ export async function readStoredScreenshot(extPage: Page, noteId: string, kind: 
   );
   return b64 ? Buffer.from(b64, 'base64') : null;
 }
+
+import type { Locator } from '@playwright/test';
+
+export async function seekVideo(page: Page, t: number) {
+  await page.evaluate(
+    (time) =>
+      new Promise<void>((resolve) => {
+        const v = document.querySelector('video')!;
+        v.pause();
+        v.addEventListener('seeked', () => resolve(), { once: true });
+        v.currentTime = time;
+      }),
+    t,
+  );
+}
+
+export async function waitForVideo(page: Page) {
+  await page.waitForFunction(() => ((document.querySelector('video') as HTMLVideoElement | null)?.readyState ?? 0) >= 2);
+}
+
+/** drag inside the draw canvas using fractions of its size */
+export async function drag(page: Page, from: [number, number], to: [number, number]) {
+  const b = (await page.getByTestId('draw-canvas').boundingBox())!;
+  await page.mouse.move(b.x + b.width * from[0], b.y + b.height * from[1]);
+  await page.mouse.down();
+  await page.mouse.move(b.x + b.width * ((from[0] + to[0]) / 2), b.y + b.height * ((from[1] + to[1]) / 2), { steps: 4 });
+  await page.mouse.move(b.x + b.width * to[0], b.y + b.height * to[1], { steps: 4 });
+  await page.mouse.up();
+}
+
+export async function addNote(page: Page, text: string) {
+  await page.getByTestId('btn-add-note').click();
+  await page.getByTestId('note-text').fill(text);
+  await page.getByTestId('note-save').click();
+}
+
+export async function thumbWidth(card: Locator): Promise<number> {
+  return card.getByTestId('note-thumb').evaluate((img: HTMLImageElement) => new Promise<number>((r) => (img.complete && img.naturalWidth ? r(img.naturalWidth) : img.addEventListener('load', () => r(img.naturalWidth)))));
+}
+
+export async function startReview(panel: Page, page: Page) {
+  await panel.getByTestId('btn-review').click();
+  await page.getByTestId('toolbar').waitFor();
+}

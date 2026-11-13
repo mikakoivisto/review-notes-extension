@@ -59,6 +59,19 @@ export function createHttpServer(opts: HttpOptions): Server {
     return !!host && !!port && [`127.0.0.1:${port}`, `localhost:${port}`, `[::1]:${port}`].includes(host.toLowerCase());
   };
 
+  /**
+   * Chrome omits `Origin` on simple GETs made by extension contexts (observed: `Sec-Fetch-Site: none`), so:
+   *  - an Origin, when present, must be the pinned extension origin (web pages always send their own Origin on
+   *    anything but no-cors GETs, and the header cannot be forged by page script);
+   *  - without Origin, `Sec-Fetch-Site` must be `none` (browser/extension-initiated, not a web page: pages send
+   *    `cross-site`/`same-site`, a forbidden header page script cannot set);
+   *  - clients sending neither (curl, scripts) are not supported on /api (use MCP or read the files).
+   */
+  function apiCallerAllowed(origin: string | undefined, fetchSite: string | string[] | undefined): boolean {
+    if (origin) return allowedOrigins.has(origin);
+    return fetchSite === 'none';
+  }
+
   server = createServer(async (req, res) => {
     try {
       if (!hostOk(req.headers.host)) throw new HttpError(403, 'Bad Host header');
@@ -71,9 +84,9 @@ export function createHttpServer(opts: HttpOptions): Server {
       }
       if (!url.pathname.startsWith('/api/')) throw new HttpError(404, 'Not found');
 
-      if (!origin || !allowedOrigins.has(origin)) throw new HttpError(403, 'Origin not allowed');
+      if (!apiCallerAllowed(origin, req.headers['sec-fetch-site'])) throw new HttpError(403, 'Caller not allowed');
       const cors = {
-        'access-control-allow-origin': origin,
+        'access-control-allow-origin': origin ?? EXTENSION_ORIGIN,
         'access-control-allow-methods': 'GET, PUT, POST, DELETE, OPTIONS',
         'access-control-allow-headers': 'content-type',
         'access-control-allow-private-network': 'true',

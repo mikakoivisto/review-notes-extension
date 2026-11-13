@@ -77,7 +77,8 @@ async function cropAndEncode(dataUrl: string, req: CaptureRequest): Promise<Capt
   if (crop === 'media') {
     const small = new OffscreenCanvas(32, 32);
     const sctx = small.getContext('2d', { willReadFrequently: true })!;
-    sctx.drawImage(canvas, 0, 0, 32, 32);
+    // analyse the central area only: player controls/titles overlay the picture and are not black
+    sctx.drawImage(canvas, sw * 0.1, sh * 0.1, sw * 0.8, sh * 0.62, 0, 0, 32, 32);
     suspectedBlack = isSuspectedBlack(sctx.getImageData(0, 0, 32, 32).data);
   }
   const out = await canvas.convertToBlob({ type: 'image/png' });
@@ -164,7 +165,7 @@ async function createNote(msg: Extract<SwMessage, { type: 'note:create' }>): Pro
       width: screenshots.annotated.width,
       height: screenshots.annotated.height,
       crop: screenshots.annotated.crop,
-      suspectedBlack: screenshots.annotated.suspectedBlack,
+      suspectedBlack: (screenshots.clean ?? screenshots.annotated).suspectedBlack,
     };
     if (screenshots.clean) {
       blobs.clean = await blobFromDataUrl(screenshots.clean.dataUrl);
@@ -223,7 +224,7 @@ async function importNotes(msg: Extract<SwMessage, { type: 'import:notes' }>) {
     const blobs: Partial<Record<ScreenshotKind, Blob>> = {};
     if (b.annotated) blobs.annotated = new Blob([b.annotated], { type: 'image/png' });
     if (b.clean) blobs.clean = new Blob([b.clean], { type: 'image/png' });
-    counts[await db.mergeNote(n, blobs)]++;
+    counts[await db.mergeNote(n, blobs, { revive: true })]++;
   }
   broadcast();
   void syncSoon();

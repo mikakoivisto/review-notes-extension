@@ -8,7 +8,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "npm run build && vitest run",
     "test:e2e": "npm run build && playwright test",
     "schema": "node scripts/gen-schema.mjs",
     "companion": "node dist/companion/cli.js serve"
@@ -18,6 +18,8 @@
     "@types/chrome": "^0.3.7",
     "@types/node": "^26.6.6",
     "esbuild": "^0.28.2",
+    "fake-indexeddb": "^6.2.8",
+    "happy-dom": "^21.0.4",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"
   },

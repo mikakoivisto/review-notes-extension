@@ -1,5 +1,9 @@
+import { existsSync } from 'node:fs';
 import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
+
+// needs `cd examples/remotion-sample && npm install` (Playwright starts the Studio itself)
+test.skip(!existsSync('examples/remotion-sample/node_modules/.bin/remotion'), 'examples/remotion-sample is not installed');
 
 const STUDIO = 'http://localhost:3123/Hello';
 const frameText = (p: Page) => p.locator('#frame-counter').textContent();

@@ -389,8 +389,11 @@ Stateless reconciliation — idempotent, safe to run at any time, no cursors:
 - Reconcile runs: after each local change (immediately, best effort), on panel focus, on options "Sync now",
   and every 60 s via `chrome.alarms` while sync is enabled.
 - **Security**: bind `127.0.0.1`; reject requests whose `Host` is not `127.0.0.1:<port>`/`localhost:<port>`
-  (DNS rebinding); `/api/*` additionally requires `Origin: chrome-extension://<id>` where the id is pinned by
-  the manifest `key` (a web page can never forge `Origin`; non-browser clients are not supported on `/api`).
+  (DNS rebinding); `/api/*` additionally requires the caller to be the extension: either
+  `Origin: chrome-extension://<id>` (id pinned by the manifest `key`; page script cannot forge `Origin`), or —
+  because Chrome *omits* `Origin` on simple GETs from extension contexts (observed, `Sec-Fetch-Site: none`) —
+  no `Origin` with `Sec-Fetch-Site: none`. Web pages send `cross-site`/`same-site` (a forbidden header they cannot
+  set) and are rejected. Header-less clients (curl) are not supported on `/api`; agents use MCP or the files.
   `/mcp` accepts requests **without** an `Origin` header (MCP clients) and rejects any browser origin.
   Request body size cap 25 MB (2 MB on `/mcp`).
 
@@ -502,3 +505,25 @@ Output: `demo/demo.webm` (+ `demo/demo.mp4` via ffmpeg) and `demo/*.png` screens
    pixels), but we should confirm behaviour with hardware-overlay video on macOS/Windows.
 9. **MCP auth for the HTTP endpoint**: Host/Origin checks only, or an optional bearer token for shared machines?
 10. **Distribution**: Chrome Web Store review of `<all_urls>`; consider optional host permissions at first run.
+
+---
+
+## 12. Implementation notes (findings while building the MVP)
+
+Things the spec got wrong or did not foresee, found by the e2e/unit tests; the spec above already reflects them.
+
+1. **Chrome omits `Origin` on simple GETs from extension contexts** (`Sec-Fetch-Site: none`), while PUT/POST/DELETE
+   carry `chrome-extension://<id>`. The companion's `/api` guard therefore accepts the pinned Origin *or*
+   `Sec-Fetch-Site: none`, and rejects `cross-site`/`same-site` (§6.3).
+2. **Black-frame detection must look at the clean capture and the picture centre**: our own drawing on top, or the
+   player's control bar, makes an all-black frame look non-black. The detector analyses the central 80 × 62 % of
+   the *clean* screenshot (§3.5).
+3. **Import must be able to revive deleted notes**: tombstones (needed for delete propagation) otherwise silently
+   swallow a re-import. Explicit import re-adds the note as a newer version.
+4. **Each panel needs its own window in automation**: `captureVisibleTab` captures the foreground tab of a window,
+   so the notes panel is opened as a popup window (also shipped as the panel's "⧉" button).
+5. **Bundle size**: zod (classic) adds ~440 KB to the panel/service-worker/options bundles. The content script is
+   zod-free (≈30 KB). `zod/mini` would shrink the others.
+6. **`remotion_setFrame` verified**: it moves the playhead, updates the preview and `remotion.time-all`, both
+   paused and while playing (e2e). `window.remotion_calculateComposition`/`remotion_getCompositionNames` exist only
+   in render mode, not in the Studio, so fps/duration/size are read from the Studio UI buttons.

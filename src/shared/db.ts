@@ -146,17 +146,22 @@ export class NotesDb {
   /**
    * Merge an externally-sourced note (import / companion pull): newer `updatedAt` wins; unknown ids are added.
    * Keeps the existing `seq` when the note already exists; otherwise assigns a fresh one.
-   * Returns what happened. Tombstones newer than the incoming note block re-adding it.
+   * Returns what happened. Tombstones newer than the incoming note block re-adding it, unless `revive` is set
+   * (explicit user import), which re-adds it as a newer version.
    */
-  async mergeNote(incoming: Note, blobs: ScreenshotBlobs = {}): Promise<'added' | 'updated' | 'kept' | 'tombstoned'> {
+  async mergeNote(incoming: Note, blobs: ScreenshotBlobs = {}, opts: { revive?: boolean } = {}): Promise<'added' | 'updated' | 'kept' | 'tombstoned'> {
     const db = await this.open();
     const tx = db.transaction([STORES.notes, STORES.shots, STORES.meta, STORES.tombstones], 'readwrite');
     const notes = tx.objectStore(STORES.notes);
     const cur: Note | undefined = await req(notes.get(incoming.id));
     const tomb: Tombstone | undefined = await req(tx.objectStore(STORES.tombstones).get(incoming.id));
     if (tomb && tomb.updatedAt >= incoming.updatedAt) {
-      await done(tx);
-      return 'tombstoned';
+      if (!opts.revive) {
+        await done(tx);
+        return 'tombstoned';
+      }
+      // explicit user import of a note they deleted earlier: revive it as a newer version than the tombstone
+      incoming = { ...incoming, updatedAt: new Date(Math.max(Date.now(), Date.parse(tomb.updatedAt) + 1)).toISOString() };
     }
     if (cur && cur.updatedAt >= incoming.updatedAt) {
       await done(tx);
