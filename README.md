@@ -19,6 +19,9 @@ Requires a Chromium-based browser (Chrome, Edge, Brave, Chromium ≥ 116).
 **From a release (no Node needed):** download `review-notes-extension-vX.Y.Z.zip` from the repo's Releases page, unzip it,
 open `chrome://extensions`, enable Developer mode, **Load unpacked**, pick the unzipped folder.
 
+**Latest dev build:** the rolling [`dev` pre-release](../../releases/tag/dev) holds `review-notes-extension-dev.zip`, built from `main` by CI
+(manifest `version_name` shows `0.1.0-dev.<run>+<sha>`). Same steps as above.
+
 **From source** (needs Node ≥ 20):
 
 ```bash

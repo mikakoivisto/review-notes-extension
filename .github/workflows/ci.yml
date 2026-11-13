@@ -1,0 +1,111 @@
+name: ci
+
+# Every push to a branch (and every PR): typecheck, unit tests, e2e, and a dev build of the extension.
+# Dev build = zip artifact on every run; pushes to main also refresh the rolling `dev` pre-release.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install Remotion sample (enables the Remotion Studio e2e tests)
+        run: npm ci --prefix examples/remotion-sample
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-test-results
+          path: test-results
+          retention-days: 7
+
+  dev-build:
+    needs: [test, e2e]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+      - name: Stamp dev version
+        run: |
+          base=$(jq -r .version dist/extension/manifest.json)
+          short=${GITHUB_SHA::7}
+          # Chrome requires a numeric `version` (up to four integers); `version_name` is free text.
+          jq --arg v "$base.$GITHUB_RUN_NUMBER" --arg n "$base-dev.$GITHUB_RUN_NUMBER+$short" \
+            '.version=$v | .version_name=$n' dist/extension/manifest.json > manifest.tmp
+          mv manifest.tmp dist/extension/manifest.json
+          echo "SHORT_SHA=$short" >> "$GITHUB_ENV"
+          jq '{version, version_name}' dist/extension/manifest.json
+
+      - name: Zip extension
+        run: |
+          (cd dist/extension && zip -r -X "$GITHUB_WORKSPACE/review-notes-extension-dev.zip" .)
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: review-notes-extension-dev-${{ env.SHORT_SHA }}
+          path: review-notes-extension-dev.zip
+          retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          name: dev-zip
+          path: review-notes-extension-dev.zip
+          retention-days: 1
+
+  dev-release:
+    needs: dev-build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dev-zip
+      - name: Refresh rolling dev pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete dev --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes || true
+          gh release create dev review-notes-extension-dev.zip \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --prerelease \
+            --title "Dev build (${GITHUB_SHA::7})" \
+            --notes "Rolling build of main at $GITHUB_SHA. Unzip and use Load unpacked. Not a stable release."
